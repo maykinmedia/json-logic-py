@@ -2,7 +2,8 @@
 # https://github.com/jwadhams/json-logic-js
 
 import logging
-from datetime import date, datetime
+import warnings
+from datetime import datetime, timezone
 from functools import reduce
 
 from dateutil.relativedelta import relativedelta
@@ -74,21 +75,28 @@ def to_numeric(arg):
 def sum_dates(*args):
     # Since sum() converts to ints or floats, in the case of
     # dates the normal + operator is needed
-    total = args[0]
-    for arg in args[1:]:
+    casted_args = [
+        datetime.fromisoformat(arg) if isinstance(arg, str) else arg for arg in args
+    ]
+    total = casted_args[0]
+    for arg in casted_args[1:]:
         total += arg
-    return total
+    return total.isoformat()
 
 
 def plus(*args):
     """Sum converts either to ints or to floats."""
-    if any([isinstance(arg, date) for arg in args]):
+    if any([isinstance(arg, relativedelta) for arg in args]):
         return sum_dates(*args)
     return sum(to_numeric(arg) for arg in args)
 
 
 def minus(*args):
     """Also, converts either to ints or to floats."""
+    # In the JS implementation, the minus operator can only have 2 arguments
+    if any([isinstance(arg, relativedelta) for arg in args]):
+        return (datetime.fromisoformat(args[0]) - args[1]).isoformat()
+
     if len(args) == 1:
         return -to_numeric(args[0])
     return to_numeric(args[0]) - to_numeric(args[1])
@@ -122,11 +130,18 @@ def get_var(data, var_name, not_found=None):
 
 
 def get_date(date_str, *args):
-    try:
-        return date.fromisoformat(date_str)
-    except ValueError:
-        date_with_time = datetime.fromisoformat(date_str)
-        return date_with_time.date()
+    warnings.warn("The date operator is deprecated", DeprecationWarning)
+    return date_str
+
+
+def get_today():
+    warnings.warn("The today operator is deprecated", DeprecationWarning)
+    return (
+        datetime.now()
+        .replace(tzinfo=timezone.utc)
+        .replace(hour=0, minute=0, second=0, microsecond=0)
+        .isoformat()
+    )
 
 
 def missing(data, *args):
@@ -218,7 +233,7 @@ operations = {
     "max": lambda *args: max(args),
     "merge": merge,
     "count": lambda *args: sum(1 if a else 0 for a in args),
-    "today": lambda *args: date.today(),
+    "today": get_today,
     "date": get_date,
     "rdelta": apply_relative_delta,
     "reduce": apply_reduce,
