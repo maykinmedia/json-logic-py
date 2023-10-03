@@ -525,6 +525,15 @@ class JSONLogicTest(unittest.TestCase):
 
         self.assertEqual("2023-03-01", jsonLogic(rule, {}))
 
+    def test_add_durations_to_datetimes(self):
+        data = {"datetime1": "2023-01-01T10:00:00+01:00", "period": "P1M1DT1H5M"}
+
+        rule = {
+            "+": [{"datetime": {"var": "datetime1"}}, {"duration": {"var": "period"}}]
+        }
+
+        self.assertEqual("2023-02-02T11:05:00+01:00", jsonLogic(rule, data))
+
     def test_comparing_periods(self):
         data = {"date1": "2023-01-01", "date2": "2023-02-01"}
 
