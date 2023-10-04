@@ -2,9 +2,10 @@
 # https://github.com/jwadhams/json-logic-js
 
 import logging
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 from functools import reduce
 
+import isodate
 from dateutil.relativedelta import relativedelta
 
 logger = logging.getLogger(__name__)
@@ -32,7 +33,7 @@ def soft_equals(a, b):
 
 def hard_equals(a, b):
     """Implements the '===' operator."""
-    if type(a) != type(b):
+    if type(a) is not type(b):
         return False
     return a == b
 
@@ -84,7 +85,7 @@ def sum_dates(*args):
     total = args[0]
     for arg in args[1:]:
         total += arg
-    return total
+    return total.isoformat()
 
 
 def plus(*args):
@@ -98,7 +99,13 @@ def minus(*args):
     """Also, converts either to ints or to floats."""
     if len(args) == 1:
         return -to_numeric(args[0])
-    return to_numeric(args[0]) - to_numeric(args[1])
+    result = to_numeric(args[0]) - to_numeric(args[1])
+    if isinstance(result, timedelta):
+        return isodate.duration_isoformat(result)
+    elif isinstance(result, (date, datetime)):
+        return result.isoformat()
+    else:
+        return result
 
 
 def merge(*args):
@@ -247,6 +254,7 @@ operations = {
     "date": get_date,
     "datetime": get_datetime,
     "rdelta": apply_relative_delta,
+    "duration": isodate.parse_duration,
 }
 
 scoped_operations = {
