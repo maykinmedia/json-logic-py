@@ -85,7 +85,7 @@ def sum_dates(*args):
     total = args[0]
     for arg in args[1:]:
         total += arg
-    return total.isoformat()
+    return total
 
 
 def plus(*args):
@@ -102,10 +102,7 @@ def minus(*args):
     result = to_numeric(args[0]) - to_numeric(args[1])
     if isinstance(result, timedelta):
         return isodate.duration_isoformat(result)
-    elif isinstance(result, (date, datetime)):
-        return result.isoformat()
-    else:
-        return result
+    return result
 
 
 def merge(*args):

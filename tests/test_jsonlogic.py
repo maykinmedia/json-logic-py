@@ -125,34 +125,34 @@ class JSONLogicTest(unittest.TestCase):
 
     def test_relative_delta_dates(self):
         self.assertEqual(
-            "2003-01-01",
+            date(2003, 1, 1),
             jsonLogic({"-": [{"date": "2021-05-05"}, {"rdelta": [18, 4, 4]}]}),
         )
         self.assertEqual(
-            "2003-01-01",
+            date(2003, 1, 1),
             jsonLogic({"-": [{"date": "2021-05-01"}, {"rdelta": [18, 4]}]}),
         )
         self.assertEqual(
-            "2003-01-01",
+            date(2003, 1, 1),
             jsonLogic({"-": [{"date": "2021-01-01"}, {"rdelta": [18]}]}),
         )
 
         self.assertEqual(
-            "2021-05-05",
+            date(2021, 5, 5),
             jsonLogic({"+": [{"date": "2003-01-01"}, {"rdelta": [18, 4, 4]}]}),
         )
         self.assertEqual(
-            "2021-05-05",
+            date(2021, 5, 5),
             jsonLogic({"+": [{"date": "2003-01-05"}, {"rdelta": [18, 4]}]}),
         )
         self.assertEqual(
-            "2021-05-05",
+            date(2021, 5, 5),
             jsonLogic({"+": [{"date": "2003-05-05"}, {"rdelta": [18]}]}),
         )
 
     def test_relative_delta_datetimes(self):
         self.assertEqual(
-            "2023-12-02T11:01:01+01:00",
+            datetime(2023, 12, 2, 11, 1, 1, tzinfo=timezone(timedelta(seconds=3600))),
             jsonLogic(
                 {
                     "+": [
@@ -163,7 +163,7 @@ class JSONLogicTest(unittest.TestCase):
             ),
         )
         self.assertEqual(
-            "2023-12-02T10:00:00+01:00",
+            datetime(2023, 12, 2, 10, 0, 0, tzinfo=timezone(timedelta(seconds=3600))),
             jsonLogic(
                 {
                     "+": [
@@ -174,7 +174,7 @@ class JSONLogicTest(unittest.TestCase):
             ),
         )
         self.assertEqual(
-            "2022-11-01T11:01:01+01:00",
+            datetime(2022, 11, 1, 11, 1, 1, tzinfo=timezone(timedelta(seconds=3600))),
             jsonLogic(
                 {
                     "+": [
@@ -519,11 +519,11 @@ class JSONLogicTest(unittest.TestCase):
 
         rule = {"+": [{"date": {"var": "date1"}}, {"duration": {"var": "period"}}]}
 
-        self.assertEqual("2023-01-02", jsonLogic(rule, data))
+        self.assertEqual(date(2023, 1, 2), jsonLogic(rule, data))
 
         rule = {"+": [{"date": "2023-02-01"}, {"duration": "P1M"}]}
 
-        self.assertEqual("2023-03-01", jsonLogic(rule, {}))
+        self.assertEqual(date(2023, 3, 1), jsonLogic(rule, {}))
 
     def test_add_durations_to_datetimes(self):
         data = {"datetime1": "2023-01-01T10:00:00+01:00", "period": "P1M1DT1H5M"}
@@ -532,7 +532,10 @@ class JSONLogicTest(unittest.TestCase):
             "+": [{"datetime": {"var": "datetime1"}}, {"duration": {"var": "period"}}]
         }
 
-        self.assertEqual("2023-02-02T11:05:00+01:00", jsonLogic(rule, data))
+        self.assertEqual(
+            datetime(2023, 2, 2, 11, 5, 0, tzinfo=timezone(timedelta(seconds=3600))),
+            jsonLogic(rule, data),
+        )
 
     def test_comparing_periods(self):
         data = {"date1": "2023-01-01", "date2": "2023-02-01"}
