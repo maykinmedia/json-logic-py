@@ -61,6 +61,36 @@ def apply_relative_delta(year=0, month=0, day=0, hours=0, minutes=0, seconds=0):
     )
 
 
+def get_duration(duration, unit=None):
+    """
+    Gets the duration of a string. It is possible to get the duration in a different unit by specifying unit.
+    """
+    duration = isodate.parse_duration(duration)
+
+    if not unit:
+        return duration
+
+    match unit:
+        case "days":
+            return duration.days
+        case "seconds":
+            return duration.seconds
+        case "microseconds":
+            return duration.microseconds
+        case "milliseconds":
+            return duration.milliseconds
+        case "minutes":
+            return duration.minutes
+        case "hours":
+            return duration.hours
+        case "weeks":
+            return duration.weeks
+        case "months":
+            return duration.months
+        case "years":
+            return duration.years
+
+
 def less_or_equal(a, b, *args):
     """Implements the '<=' operator with JS-style type coertion."""
     return (less(a, b) or soft_equals(a, b)) and (not args or less_or_equal(b, *args))
@@ -251,7 +281,7 @@ operations = {
     "date": get_date,
     "datetime": get_datetime,
     "rdelta": apply_relative_delta,
-    "duration": isodate.parse_duration,
+    "duration": get_duration,
 }
 
 scoped_operations = {
