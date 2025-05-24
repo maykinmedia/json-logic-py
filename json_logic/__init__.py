@@ -65,10 +65,13 @@ def get_duration(duration, unit=None):
     """
     Gets the duration of a string. It is possible to get the duration in a different unit by specifying unit.
     """
-    duration = isodate.parse_duration(duration)
+    if not duration:
+        return duration
 
     if not unit:
         return duration
+
+    duration = isodate.parse_duration(duration)
 
     match unit:
         case "days":
