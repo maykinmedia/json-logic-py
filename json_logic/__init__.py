@@ -261,8 +261,8 @@ scoped_operations = {
     "map": apply_map,
 }
 
-ALL_OPERATIONS = {"var", "missing", "missing_some"}.union(operations).union(
-    scoped_operations
+ALL_OPERATIONS = (
+    {"var", "missing", "missing_some"}.union(operations).union(scoped_operations)
 )
 
 # Which values to consider as "empty" for the operands of different operators

@@ -1,6 +1,7 @@
 """
 Tests for jsonLogic.
 """
+
 import unittest
 from datetime import date, datetime, timedelta, timezone
 
