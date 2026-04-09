@@ -213,7 +213,7 @@ def apply_reduce(data, iterable_path, scoped_logic, initializer):
             scoped_logic, {"accumulator": accumulator, "current": current}
         ),
         iterable,
-        initializer,
+        jsonLogic(initializer, data),
     )
 
 
