@@ -9,13 +9,11 @@ from json_logic.meta.operations import Var
 def test_representation_simple_operation():
     op1 = Operation("==", [10, "foo"])
 
-    expected = dedent(
-        """
+    expected = dedent("""
         Operation(==)
           ├─ 10
           └─ 'foo'
-    """
-    ).strip()
+    """).strip()
     assert repr(op1) == expected
 
 
@@ -23,15 +21,13 @@ def test_representation_nested_operations():
     op1 = Operation("+", [10, 5])
     op2 = Operation("==", [op1, 15])
 
-    expected = dedent(
-        """
+    expected = dedent("""
         Operation(==)
           ├─ Operation(+)
           │    ├─ 10
           │    └─ 5
           └─ 15
-    """
-    ).strip()
+    """).strip()
 
     assert repr(op2) == expected
 
