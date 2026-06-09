@@ -13,6 +13,24 @@ from .typing import JSON, Object
 logger = logging.getLogger(__name__)
 
 
+class UndefinedType:
+    """
+    Sentinel for 'undefined' values.
+
+    Used when `use_var_undefined` is set to True in order to treat None values in a more
+    specific way (JS-style).
+    """
+
+    def __repr__(self):
+        return "undefined"
+
+    def __bool__(self):
+        return False
+
+
+UNDEFINED_VALUE = UndefinedType()
+
+
 def if_(*args):
     """Implements the 'if' operator with support for multiple elseif-s."""
     for i in range(0, len(args) - 1, 2):
@@ -118,10 +136,14 @@ def merge(*args):
     return ret
 
 
-def get_var(data, var_name, not_found=None):
-    """Gets variable value from data dictionary."""
-    if var_name == "" or var_name is None:
-        return data  # Return the whole data object
+def get_var(data, var_name, not_found=UNDEFINED_VALUE, use_var_undefined=False):
+    if not var_name:
+        return data
+
+    if not use_var_undefined and not_found is UNDEFINED_VALUE:
+        not_found = None
+
+    default_not_found = UNDEFINED_VALUE if use_var_undefined else None
 
     try:
         for key in str(var_name).split("."):
@@ -132,7 +154,7 @@ def get_var(data, var_name, not_found=None):
     except (KeyError, TypeError, ValueError, IndexError):
         return not_found
     else:
-        if data is None and not_found is not None:
+        if data is None and not_found is not default_not_found:
             return not_found
         return data
 
@@ -267,22 +289,22 @@ ALL_OPERATIONS = (
 
 # Which values to consider as "empty" for the operands of different operators
 empty_operand_values_for_operators = {
-    ">": [None],
-    ">=": [None],
-    "<": [None],
-    "<=": [None],
-    "%": [None],
-    "log": [None],
-    "+": [None],
-    "*": [None],
-    "-": [None],
-    "/": [None],
-    "min": [None],
-    "max": [None],
-    "count": [None],
-    "date": [None, ""],
-    "datetime": [None, ""],
-    "years": [None],
+    ">": [None, UNDEFINED_VALUE],
+    ">=": [None, UNDEFINED_VALUE],
+    "<": [None, UNDEFINED_VALUE],
+    "<=": [None, UNDEFINED_VALUE],
+    "%": [None, UNDEFINED_VALUE],
+    "log": [None, UNDEFINED_VALUE],
+    "+": [None, UNDEFINED_VALUE],
+    "*": [None, UNDEFINED_VALUE],
+    "-": [None, UNDEFINED_VALUE],
+    "/": [None, UNDEFINED_VALUE],
+    "min": [None, UNDEFINED_VALUE],
+    "max": [None, UNDEFINED_VALUE],
+    "count": [None, UNDEFINED_VALUE],
+    "date": [None, "", UNDEFINED_VALUE],
+    "datetime": [None, "", UNDEFINED_VALUE],
+    "years": [None, UNDEFINED_VALUE],
 }
 
 
@@ -294,7 +316,12 @@ def is_data(tests: Object) -> bool:
     return True
 
 
-def jsonLogic(tests: JSON, data: JSON = None, permissive: bool = False) -> JSON:
+def jsonLogic(
+    tests: JSON,
+    data: JSON = None,
+    permissive: bool = False,
+    use_var_undefined: bool = False,
+):
     """
     Execute the json-logic with given data.
 
@@ -302,11 +329,16 @@ def jsonLogic(tests: JSON, data: JSON = None, permissive: bool = False) -> JSON:
     :param data: The context data.
     :param permissive: If True, invalid JSON logic expressions will be interpreted as
       data, instead of crashing hard.
+    :param use_var_undefined: If True, missing variables will return UNDEFINED_VALUE
+      instead of None.
     """
     from .meta.expressions import destructure
 
     if isinstance(tests, list):
-        return [jsonLogic(item, data, permissive) for item in tests]
+        return [
+            jsonLogic(item, data, permissive, use_var_undefined=use_var_undefined)
+            for item in tests
+        ]
 
     # You've recursed to a primitive, stop!
     if tests is None or not isinstance(tests, dict):
@@ -328,11 +360,14 @@ def jsonLogic(tests: JSON, data: JSON = None, permissive: bool = False) -> JSON:
         return scoped_operations[operator](data, *values)
 
     # Recursion!
-    values = [jsonLogic(val, data, permissive) for val in values]
+    values = [
+        jsonLogic(val, data, permissive, use_var_undefined=use_var_undefined)
+        for val in values
+    ]
 
     match operator:
         case "var":
-            return get_var(data, *values)
+            return get_var(data, *values, use_var_undefined=use_var_undefined)
         case "missing":
             return missing(data, *values)
         case "missing_some":
