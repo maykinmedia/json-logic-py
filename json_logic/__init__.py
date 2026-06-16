@@ -140,6 +140,10 @@ def get_var(data, var_name, not_found=UNDEFINED_VALUE, use_var_undefined=False):
     if not var_name:
         return data
 
+    # Setting UNDEFINED_VALUE as the default value for not_found function argument ensures
+    # we can detect when no value was passed, because it's not possible to specify this
+    # undefined value in a JSON logic expression. We need to switch back to None, though,
+    # if we are opting out of using the undefined value.
     if not use_var_undefined and not_found is UNDEFINED_VALUE:
         not_found = None
 
