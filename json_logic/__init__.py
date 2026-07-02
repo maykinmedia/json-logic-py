@@ -209,6 +209,31 @@ def missing_some(data, min_required, args):
     return ret
 
 
+def substr(text, start, length=None):
+    if text is None or text is UNDEFINED_VALUE:
+        return None
+
+    # cases where the text is not already a string ({"substr": [12345, 1, 2]})
+    text = str(text)
+
+    if start < 0:
+        start = len(text) + start
+        if start < 0:
+            start = 0
+
+    if length is None:
+        return text[start:]
+
+    if length >= 0:
+        return text[start : start + length]
+
+    end = len(text) + length
+    if end < start:
+        return ""
+
+    return text[start:end]
+
+
 def apply_reduce(data, iterable_path, scoped_logic, initializer):
     """Calculate reduce
 
@@ -280,6 +305,7 @@ operations = {
     "datetime": get_datetime,
     "rdelta": apply_relative_delta,
     "duration": isodate.parse_duration,
+    "substr": substr,
 }
 
 scoped_operations = {
@@ -309,6 +335,7 @@ empty_operand_values_for_operators = {
     "date": [None, "", UNDEFINED_VALUE],
     "datetime": [None, "", UNDEFINED_VALUE],
     "years": [None, UNDEFINED_VALUE],
+    "substr": [None, UNDEFINED_VALUE],
 }
 
 

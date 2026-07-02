@@ -22,7 +22,7 @@ def test_shared_test(shared_test):
     assert result == expected
 
 
-@pytest.mark.unsupported_operators(["filter", "all", "none", "some", "substr"])
+@pytest.mark.unsupported_operators(["filter", "all", "none", "some"])
 @pytest.mark.unsupported_logic(
     [
         {"var": []},
