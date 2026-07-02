@@ -3,7 +3,7 @@ import pytest
 from json_logic import UNDEFINED_VALUE, jsonLogic
 
 
-@pytest.mark.unsupported_operators(["filter", "all", "none", "some", "substr"])
+@pytest.mark.unsupported_operators(["filter", "all", "none", "some"])
 @pytest.mark.unsupported_logic(
     [
         {"var": []},
