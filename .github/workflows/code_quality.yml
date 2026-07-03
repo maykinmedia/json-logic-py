@@ -7,11 +7,13 @@ on:
       - master
     tags:
     paths:
-      - '**.py'
+      - "**.py"
   pull_request:
     paths:
-      - '**.py'
+      - "**.py"
   workflow_dispatch:
+
+permissions: {}
 
 jobs:
   linting:
@@ -21,10 +23,12 @@ jobs:
       matrix:
         toxenv: [isort, black, flake8]
     steps:
-      - uses: actions/checkout@v6
-      - uses: actions/setup-python@v6
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
-          python-version: '3.12'
+          persist-credentials: false
+      - uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
+        with:
+          python-version: "3.12"
       - name: Install dependencies
         run: pip install tox
       - run: tox
