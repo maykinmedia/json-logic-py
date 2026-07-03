@@ -180,7 +180,7 @@ def test_map():
     assert repr(tree) == expected_repr
 
 
-@pytest.mark.unsupported_operators(["filter", "all", "none", "some", "substr"])
+@pytest.mark.unsupported_operators(["filter", "all", "none", "some"])
 def test_can_process_shared_tests(shared_test):
     expr, _, _ = shared_test
 
