@@ -2,6 +2,7 @@
 # https://github.com/jwadhams/json-logic-js
 
 import logging
+from collections.abc import Callable, Sequence
 from datetime import date, datetime, timedelta
 from functools import reduce
 
@@ -163,21 +164,38 @@ def get_var(data, var_name, not_found=UNDEFINED_VALUE, use_var_undefined=False):
         return data
 
 
-def get_date(value, *args):
+type DateParser = Callable[[str], date | None]
+
+DATE_PARSERS: Sequence[DateParser] = [
+    date.fromisoformat,
+    lambda value: datetime.fromisoformat(value).date(),
+]
+
+
+def get_date(value, *args) -> date | None:
     if isinstance(value, date):
         return value
+    assert isinstance(value, str)
 
-    try:
-        return date.fromisoformat(value)
-    except ValueError:
-        date_with_time = datetime.fromisoformat(value)
-        return date_with_time.date()
+    for parser in DATE_PARSERS:
+        try:
+            return parser(value)
+        except ValueError:
+            continue
+    logger.debug("date_parsing_failed", extra={"input_value": value})
+    return None
 
 
-def get_datetime(value, *args):
+def get_datetime(value, *args) -> datetime | None:
     if isinstance(value, datetime):
         return value
-    return datetime.fromisoformat(value)
+    assert isinstance(value, str)
+
+    try:
+        return datetime.fromisoformat(value)
+    except ValueError:
+        logger.debug("datetime_parsing_failed", extra={"input_value": value})
+        return None
 
 
 def missing(data, *args):
@@ -313,8 +331,8 @@ scoped_operations = {
     "map": apply_map,
 }
 
-ALL_OPERATIONS = (
-    {"var", "missing", "missing_some"}.union(operations).union(scoped_operations)
+ALL_OPERATIONS = {"var", "missing", "missing_some"}.union(operations).union(
+    scoped_operations
 )
 
 # Which values to consider as "empty" for the operands of different operators
