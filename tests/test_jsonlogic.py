@@ -74,6 +74,9 @@ class JSONLogicTest(unittest.TestCase):
         self.assertTrue(
             jsonLogic({"<=": [{"date": "2020-01-01"}, {"date": "2021-01-01"}]})
         )
+        # invalid ISO-8601 gets handled as missing/empty/None/null - as this may be
+        # partial user input that can't be processed yet
+        self.assertIsNone(jsonLogic({"date": "21-7-"}))
 
     def test_today(self):
         test_date = date(2021, 10, 1)
@@ -123,6 +126,9 @@ class JSONLogicTest(unittest.TestCase):
                 {},
             )
         )
+        # invalid ISO-8601 gets handled as missing/empty/None/null - as this may be
+        # partial user input that can't be processed yet
+        self.assertIsNone(jsonLogic({"datetime": "21-7-"}))
 
     def test_relative_delta_dates(self):
         self.assertEqual(
